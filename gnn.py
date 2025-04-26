@@ -15,11 +15,18 @@ edges     = list(zip(df_edges["source"], df_edges["target"]))
 weights   = {(u, v): w for u, v, w in zip(df_edges["source"], df_edges["target"], df_edges["weight"]) }
 
 # — 2. Load features
-df_feat    = pd.read_csv("feature_matrix.csv", header=None)
+df_feat    = pd.read_csv("feature_matrix.csv", index_col="node")  
+
+# —— 保持和训练图完全一致的节点顺序
 nodes_full = sorted(set(df_edges["source"]) | set(df_edges["target"]))
-df_feat    = df_feat.iloc[1:1+len(nodes_full)]
+df_feat    = df_feat.loc[nodes_full]      
+
+# —— 构造张量
 X          = torch.tensor(df_feat.values.astype(np.float32), device=device)
+
+# —— 建立索引映射
 idx_map    = {n: i for i, n in enumerate(nodes_full)}
+
 
 # — 3. Split edges
 e_train, e_tmp  = train_test_split(edges, test_size=0.30, random_state=42)
